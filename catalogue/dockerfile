@@ -1,6 +1,6 @@
 FROM node:20
 WORKDIR /opt/server
-copy packasge.json .
+copy package.json .
 copy *.js .
 RUN npm install 
 ENV MONGO="true" \
