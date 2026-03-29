@@ -1,18 +1,18 @@
-FROM maven AS builder
+FROM node:20-alpine3.21 AS builder
 WORKDIR /opt/server
-COPY pom.xml .
-COPY src /opt/server/src
-RUN mvn clean package
+COPY package.json .
+COPY *.js .
+RUN npm install
 
-FROM eclipse-temurin:17-jre-alpine
-EXPOSE 8080
-WORKDIR /opt/server
+FROM node:20-alpine3.21
 RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
-ENV CART_ENDPOINT="cart:8080" \
-    DB_HOST="mysql"
-COPY --from=builder /opt/server/target/shipping-*.jar /opt/server/shipping.jar
+ENV MONGO_URL="mongodb://mongodb:27017/users" \
+    REDIS_URL="redis://redis:6379" \
+    MONGO=true
+WORKDIR /opt/server
 USER roboshop
-CMD ["java","-jar","shipping.jar"]
+COPY --from=builder /opt/server /opt/server
+CMD ["node","server.js"]
 
 
 
