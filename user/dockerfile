@@ -1,12 +1,28 @@
-FROM node:20
+FROM maven AS builder
 WORKDIR /opt/server
-COPY package.json .
-COPY *.js .
-RUN npm install
-ENV MONGO="true" \
-    REDIS_URL="redis://redis:6379" \
-    MONGO_URL="mongodb://mongodb:27017/users"
-# ENV MONGO="true"
+COPY pom.xml .
+COPY src /opt/server/src
+RUN mvn clean package
+
+FROM eclipse-temurin:17-jre-alpine
+EXPOSE 8080
+WORKDIR /opt/server
+RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
+ENV CART_ENDPOINT="cart:8080" \
+    DB_HOST="mysql"
+COPY --from=builder /opt/server/target/shipping-*.jar /opt/server/shipping.jar
+USER roboshop
+CMD ["java","-jar","shipping.jar"]
+
+
+
+
+# FROM node:20
+# WORKDIR /opt/server
+# COPY package.json .
+# COPY *.js .
+# RUN npm install
+# ENV MONGO="true" \
 #     REDIS_URL="redis://redis:6379" \
 #     MONGO_URL="mongodb://mongodb:27017/users"
-CMD ["node","server.js"]
+# CMD ["node","server.js"]
