@@ -58,6 +58,7 @@ services:
   payment:
     image: 9347673562/payment:v1
     container_name: payment
+    user: root
     environment:
       CART_HOST: cart
       CART_PORT: 8080
